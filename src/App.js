@@ -482,14 +482,6 @@ CREATE TABLE comments (
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 md:px-6 py-2.5 rounded-lg font-semibold flex items-center gap-1 md:gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
-          >
-            <Plus size={16} className="md:block hidden" />
-            <Plus size={14} className="md:hidden block" />
-            <span className="text-sm md:text-base">등록</span>
-          </button>
         </div>
       </header>
 
@@ -1161,6 +1153,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
