@@ -474,7 +474,7 @@ CREATE TABLE comments (
             )}
             <div>
               <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                [매월 1회] 소중한 봉사 기록장
+                [매월 1회] 소중한 봉사 기록장🥰
               </h1>
               <p className="text-xs text-gray-500 mt-1">
                 주최자는 진행한 봉사 활동 기록을 남겨주시고<br/>
@@ -1151,6 +1151,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
