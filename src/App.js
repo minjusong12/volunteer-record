@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Camera, Plus, ArrowLeft, X, Upload, MessageCircle, Trash2, Shield, Edit, ChevronDown } from 'lucide-react';
 
 // Supabase 설정
-const SUPABASE_URL = 'https://onxzpxcouwxytvcsiuji.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ueHpweGNvdXd4eXR2Y3NpdWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4NjE3ODIsImV4cCI6MjA3MzQzNzc4Mn0.QRBzojNdUyATPWXy5oO2LM0a0A-htET0OY2TgxsxvcI';
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
 
 class SupabaseClient {
   constructor(url, key) {
@@ -270,7 +271,7 @@ const VolunteerRecordApp = () => {
   };
 
   const deleteRecord = async () => {
-    if (adminPassword !== '109123') {
+    if (adminPassword !== ADMIN_PASSWORD) {
       alert('관리자 비밀번호가 틀렸습니다.');
       return;
     }
@@ -1150,5 +1151,6 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
