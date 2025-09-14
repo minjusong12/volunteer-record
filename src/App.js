@@ -119,7 +119,7 @@ const VolunteerRecordApp = () => {
       }
       
       // 기록과 댓글을 함께 불러오기
-      // 정렬 없이 단순 조회
+      // 정렬 없이 조회
       const recordsData = await supabase.select('records');
       const commentsData = await supabase.select('comments');
       
@@ -1164,6 +1164,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
