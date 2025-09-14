@@ -474,7 +474,7 @@ CREATE TABLE comments (
             )}
             <div>
               <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                [매월 1회] 소중한 봉사 기록장🥰
+                [매월 1회] 소중한 봉사 기록장
               </h1>
               <p className="text-xs text-gray-500 mt-1">
                 주최자는 진행한 봉사 활동 기록을 남겨주시고<br/>
@@ -484,10 +484,11 @@ CREATE TABLE comments (
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 md:px-6 py-2.5 rounded-lg font-semibold flex items-center gap-1 md:gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
           >
-            <Plus size={18} />
-            등록
+            <Plus size={16} className="md:block hidden" />
+            <Plus size={14} className="md:hidden block" />
+            <span className="text-sm md:text-base">등록</span>
           </button>
         </div>
       </header>
@@ -1151,6 +1152,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
