@@ -473,7 +473,7 @@ CREATE TABLE comments (
               </button>
             )}
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 [매월 1회] 소중한 봉사 기록장
               </h1>
               <p className="text-xs text-gray-500 mt-1">
@@ -496,7 +496,7 @@ CREATE TABLE comments (
       {currentView === 'main' && (
         <div className="max-w-4xl mx-auto p-5">
           {/* 통계 섹션 */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8 flex justify-center gap-16">
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8 flex justify-center gap-8 md:gap-16">
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-800">{records.length}</div>
               <div className="text-sm text-gray-500 mt-1 font-medium">게시글</div>
@@ -537,7 +537,7 @@ CREATE TABLE comments (
                 <p className="text-sm">우측 상단의 '+ 등록' 버튼을 눌러 첫 번째 기록을 추가해보세요!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-1 p-1">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-1 p-1">
                 {sortedRecords.map(record => (
                   <div
                     key={record.id}
@@ -1151,6 +1151,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
