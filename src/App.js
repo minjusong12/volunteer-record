@@ -119,11 +119,13 @@ const VolunteerRecordApp = () => {
       }
       
       // 기록과 댓글을 함께 불러오기
-      const recordsData = await supabase.select('records', 'select=*&order=created_at.desc');
-      const commentsData = await supabase.select('comments', 'select=*&order=created_at.asc');
+      // 정렬 없이 단순 조회
+      const recordsData = await supabase.select('records');
+      const commentsData = await supabase.select('comments');
       
-      // 각 기록에 댓글 연결
-      const recordsWithComments = recordsData.map(record => ({
+      // 클라이언트에서 정렬 후 댓글 연결
+      const sortedRecords = recordsData.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+      const recordsWithComments = sortedRecords.map(record => ({
         ...record,
         comments: commentsData.filter(comment => comment.record_id === record.id)
       }));
@@ -1162,6 +1164,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
