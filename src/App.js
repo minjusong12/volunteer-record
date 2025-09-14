@@ -382,7 +382,7 @@ const VolunteerRecordApp = () => {
   };
 
   const totalHours = records.reduce((sum, record) => sum + (record.hours || 0), 0);
-  const uniqueOrganizations = new Set(records.map(record => record.organization)).size;
+  const totalComments = records.reduce((sum, record) => sum + (record.comments?.length || 0), 0);
   const sortedRecords = getSortedRecords();
 
   // Supabase 설정 확인
@@ -499,15 +499,15 @@ CREATE TABLE comments (
           <div className="bg-white rounded-xl shadow-sm p-6 mb-8 flex justify-center gap-16">
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-800">{records.length}</div>
-              <div className="text-sm text-gray-500 mt-1 font-medium">게시물</div>
+              <div className="text-sm text-gray-500 mt-1 font-medium">게시글</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-800">{totalHours}</div>
-              <div className="text-sm text-gray-500 mt-1 font-medium">총 시간</div>
+              <div className="text-sm text-gray-500 mt-1 font-medium">총 봉사 시간</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800">{uniqueOrganizations}</div>
-              <div className="text-sm text-gray-500 mt-1 font-medium">참여 기관</div>
+              <div className="text-3xl font-bold text-gray-800">{totalComments}</div>
+              <div className="text-sm text-gray-500 mt-1 font-medium">후기 댓글</div>
             </div>
           </div>
 
@@ -1151,6 +1151,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
