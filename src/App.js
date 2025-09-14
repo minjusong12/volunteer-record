@@ -118,10 +118,14 @@ const VolunteerRecordApp = () => {
         throw new Error('Supabase configuration is missing');
       }
       
-      // 기록과 댓글을 함께 불러오기
-      // 정렬 없이 조회
-      const recordsData = await supabase.select('records');
-      const commentsData = await supabase.select('comments');
+      console.log('Loading records...');
+      
+      // 매우 간단한 쿼리로 테스트
+      const recordsData = await supabase.select('records', 'limit=5');
+      console.log('Records loaded:', recordsData);
+      
+      // comments는 나중에 추가
+      const commentsData = [];
       
       // 클라이언트에서 정렬 후 댓글 연결
       const sortedRecords = recordsData.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
@@ -1164,6 +1168,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
