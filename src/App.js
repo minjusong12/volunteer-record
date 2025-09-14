@@ -21,31 +21,24 @@ class SupabaseClient {
       ...options,
       headers: { ...this.headers, ...options.headers }
     });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Supabase error:', response.status, errorText);
-    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-  }
-  
-  const text = await response.text();
-  if (!text) {
-    return [];
-  }
-  
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    console.error('JSON parse error:', error, 'Response text:', text);
-    throw new Error('Invalid JSON response from server');
-  }
-};
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Supabase error:', response.status, errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
     
-    return await response.json();
+    const text = await response.text();
+    if (!text) {
+      return [];
+    }
+    
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      console.error('JSON parse error:', error, 'Response text:', text);
+      throw new Error('Invalid JSON response from server');
+    }
   }
 
   async select(table, query = '') {
@@ -1157,4 +1150,5 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
