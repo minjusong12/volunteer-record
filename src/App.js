@@ -77,6 +77,9 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
 const VolunteerRecordApp = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const ITEMS_PER_PAGE = 10;
   const [currentView, setCurrentView] = useState('main');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -109,23 +112,23 @@ const VolunteerRecordApp = () => {
     loadRecords();
   }, []);
 
-  const loadRecords = async () => {
+  const loadRecords = async (pageNum = 0, append = false) => {
     try {
       setLoading(true);
       
-      // Supabase 설정 확인
       if (!supabase) {
         throw new Error('Supabase configuration is missing');
       }
       
-      console.log('Loading records...');
+      // 페이징으로 최신 데이터부터 로드
+      const offset = pageNum * ITEMS_PER_PAGE;
+      const recordsData = await supabase.select('records', `order=id.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+      const commentsData = await supabase.select('comments');
       
-      // 매우 간단한 쿼리로 테스트
-      const recordsData = await supabase.select('records', 'limit=5');
-      console.log('Records loaded:', recordsData);
-      
-      // comments는 나중에 추가
-      const commentsData = [];
+      // 더 이상 데이터가 없으면 hasMore false
+      if (recordsData.length < ITEMS_PER_PAGE) {
+        setHasMore(false);
+      }
       
       // 클라이언트에서 정렬 후 댓글 연결
       const sortedRecords = recordsData.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
@@ -1168,6 +1171,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
