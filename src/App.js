@@ -69,7 +69,10 @@ class SupabaseClient {
   }
 }
 
-const supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
 const VolunteerRecordApp = () => {
   const [records, setRecords] = useState([]);
@@ -109,6 +112,12 @@ const VolunteerRecordApp = () => {
   const loadRecords = async () => {
     try {
       setLoading(true);
+      
+      // Supabase 설정 확인
+      if (!supabase) {
+        throw new Error('Supabase configuration is missing');
+      }
+      
       // 기록과 댓글을 함께 불러오기
       const recordsData = await supabase.select('records', 'select=*&order=created_at.desc');
       const commentsData = await supabase.select('comments', 'select=*&order=created_at.asc');
@@ -386,7 +395,7 @@ const VolunteerRecordApp = () => {
   const sortedRecords = getSortedRecords();
 
   // Supabase 설정 확인
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full">
@@ -1153,6 +1162,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
