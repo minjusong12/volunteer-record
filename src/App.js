@@ -516,19 +516,28 @@ CREATE TABLE comments (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-800">봉사활동 기록</h2>
-              {records.length > 0 && (
-                <div className="relative">
-                  <select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    className="appearance-none bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
-                  >
-                    <option value="newest">최신순</option>
-                    <option value="oldest">오래된 순</option>
-                  </select>
-                  <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {records.length > 0 && (
+                  <div className="relative">
+                    <select
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value)}
+                      className="appearance-none bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
+                    >
+                      <option value="newest">최신순</option>
+                      <option value="oldest">오래된 순</option>
+                    </select>
+                    <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-1 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
+                >
+                  <Plus size={16} />
+                  <span className="text-sm">등록</span>
+                </button>
+              </div>
             </div>
             
             {records.length === 0 ? (
@@ -1152,6 +1161,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
