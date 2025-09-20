@@ -106,11 +106,12 @@ const VolunteerRecordApp = () => {
   
       const offset = pageNum * ITEMS_PER_PAGE;
       // 1) records 테이블에서 9개씩 페이징 조회
-      const { data: recordsData, error: recordsError } = await supabase
+      const { data: recordsData, error: recordsError } = await supabaseClient
         .from('records')
         .select('*')
         .order('id', { ascending: false })
         .range(offset, offset + ITEMS_PER_PAGE - 1);
+
       
       if (recordsError) {
         console.error('records 불러오기 에러:', recordsError);
@@ -1203,6 +1204,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
