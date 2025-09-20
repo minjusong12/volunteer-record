@@ -118,7 +118,7 @@ const VolunteerRecordApp = () => {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 9;
   const [currentView, setCurrentView] = useState('main');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -148,38 +148,60 @@ const VolunteerRecordApp = () => {
 
   // 데이터 로드
   useEffect(() => {
-    loadRecords();
-  }, []);
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
+        !loading &&
+        hasMore
+      ) {
+        setPage(prev => {
+          const next = prev + 1;
+          loadRecords(next, true); // append = true
+          return next;
+        });
+      }
+    };
+  
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, hasMore]);
 
+  // 👉 페이지 진입시 첫 9개 로드
+  useEffect(() => {
+    loadRecords(0, false);
+  }, []);
+  
   const loadRecords = async (pageNum = 0, append = false) => {
     try {
       setLoading(true);
-      
-      if (!supabase) {
-        throw new Error('Supabase configuration is missing');
-      }
-      
-      // 페이징으로 최신 데이터부터 로드
+  
       const offset = pageNum * ITEMS_PER_PAGE;
-      const recordsData = await supabase.select('records', `order=id.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+      const recordsData = await supabase.select(
+        'records',
+        `order=id.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}`
+      );
       const commentsData = await supabase.select('comments');
-      
-      // 더 이상 데이터가 없으면 hasMore false
+  
       if (recordsData.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
+        setHasMore(false); // 마지막 페이지 도달
       }
-      
-      // 클라이언트에서 정렬 후 댓글 연결
-      const sortedRecords = recordsData.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+  
+      const sortedRecords = recordsData.sort(
+        (a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+      );
       const recordsWithComments = sortedRecords.map(record => ({
         ...record,
         comments: commentsData.filter(comment => comment.record_id === record.id)
       }));
-      
-      setRecords(recordsWithComments);
+  
+      if (append) {
+        setRecords(prev => [...prev, ...recordsWithComments]);
+      } else {
+        setRecords(recordsWithComments);
+      }
     } catch (error) {
       console.error('데이터 로드 실패:', error);
-      alert('데이터를 불러오는데 실패했습니다. Supabase 설정을 확인해주세요.');
+      alert('데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -1234,6 +1256,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
