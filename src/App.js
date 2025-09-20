@@ -129,9 +129,58 @@ const VolunteerRecordApp = () => {
       }
       
       // 3) 마지막 페이지 여부 확인
-      if (!recordsData || recordsData.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
-      }
+      const loadRecords = async (pageNum = 0, append = false) => {
+        try {
+          setLoading(true);
+      
+          const offset = pageNum * ITEMS_PER_PAGE;
+      
+          const { data: recordsData, error: recordsError } = await supabaseClient
+            .from('records')
+            .select('*')
+            .order('id', { ascending: false })
+            .range(offset, offset + ITEMS_PER_PAGE - 1);
+      
+          if (recordsError) {
+            console.error('records 불러오기 에러:', recordsError);
+            return;
+          }
+      
+          const { data: commentsData, error: commentsError } = await supabaseClient
+            .from('comments')
+            .select('*');
+      
+          if (commentsError) {
+            console.error('comments 불러오기 에러:', commentsError);
+            return;
+          }
+      
+          // ✅ 조건 수정
+          if (!recordsData || recordsData.length === 0) {
+            setHasMore(false);
+          }
+      
+          const sortedRecords = (recordsData || []).sort(
+            (a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+          );
+          const recordsWithComments = sortedRecords.map(record => ({
+            ...record,
+            comments: commentsData.filter(comment => comment.record_id === record.id),
+          }));
+      
+          if (append) {
+            setRecords(prev => [...prev, ...recordsWithComments]);
+          } else {
+            setRecords(recordsWithComments);
+          }
+        } catch (error) {
+          console.error('데이터 로드 실패:', error);
+          alert('데이터를 불러오는데 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
       
       // 4) 정렬 (created_at 또는 date 기준)
       const sortedRecords = (recordsData || []).sort(
@@ -1204,6 +1253,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
