@@ -1,5 +1,41 @@
+import { createClient } from '@supabase/supabase-js';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 import React, { useState, useEffect } from 'react';
 import { Camera, Plus, ArrowLeft, X, Upload, MessageCircle, Trash2, Shield, Edit, ChevronDown } from 'lucide-react';
+
+const compressImage = (file, maxSize = 1200) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          resolve(new File([blob], file.name, { type: file.type }));
+        },
+        file.type,
+        0.7 // 품질 (0~1, 낮을수록 용량 작아짐)
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
+};
+
 
 // Supabase 설정
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
@@ -157,18 +193,42 @@ const VolunteerRecordApp = () => {
     setNewComment(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = (event) => {
+  const handlePhotoUpload = async (event) => {
     const files = Array.from(event.target.files);
     const remainingSlots = 10 - selectedPhotos.length;
     const filesToAdd = files.slice(0, remainingSlots);
+  
+    for (const file of filesToAdd) {
+      // 1) 압축
+      const compressed = await compressImage(file);
+  
+      // 2) Supabase Storage 업로드
+      const fileName = `${Date.now()}_${compressed.name}`;
+      const { error } = await supabaseClient
+        .storage
+        .from('volunteer-photos') // 👉 버킷 이름 (Supabase에서 만든 이름)
+        .upload(fileName, compressed);
+  
+      if (error) {
+        console.error('Upload error:', error);
+        continue;
+      }
+  
+      // 3) Public URL 가져오기
+      const { data } = supabaseClient
+        .storage
+        .from('volunteer-photos')
+        .getPublicUrl(fileName);
+  
+      // 4) URL을 state에 저장
+      setSelectedPhotos((prev) => [...prev, data.publicUrl]);
+    }
+  
+    if (files.length > remainingSlots) {
+      alert(`최대 10장까지만 업로드할 수 있습니다. ${filesToAdd.length}장이 추가되었습니다.`);
+    }
+  };
 
-    filesToAdd.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedPhotos(prev => [...prev, e.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
 
     if (files.length > remainingSlots) {
       alert(`최대 10장까지만 업로드할 수 있습니다. ${filesToAdd.length}장이 추가되었습니다.`);
@@ -1174,6 +1234,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
