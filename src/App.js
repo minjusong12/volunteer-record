@@ -43,10 +43,13 @@ class SupabaseClient {
   }
 
   async select(table, query = '') {
-    return this.fetch(`/${table}${query ? `?${query}` : ''}`, {
-      method: 'GET'
-    });
+    // query에 select= 가 없으면 자동으로 select=* 추가
+    const qs = query ? `?${query}` : '?select=*';
+    const finalQs = qs.includes('select=') ? qs
+      : (qs === '?' ? '?select=*' : `${qs}&select=*`);
+    return this.fetch(`/${table}${finalQs}`, { method: 'GET' });
   }
+
 
   async insert(table, data) {
     return this.fetch(`/${table}`, {
@@ -1171,6 +1174,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
