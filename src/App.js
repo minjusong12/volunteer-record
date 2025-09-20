@@ -94,7 +94,7 @@ const VolunteerRecordApp = () => {
   
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [loading, hasMore]);
+  }, [hasMore]);
 
   // 👉 페이지 진입시 첫 9개 로드
   useEffect(() => {
@@ -1201,6 +1201,7 @@ CREATE TABLE comments (
 };
 
 export default VolunteerRecordApp;
+
 
 
 
