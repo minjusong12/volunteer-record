@@ -42,77 +42,6 @@ const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
 const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
 
-class SupabaseClient {
-  constructor(url, key) {
-    this.url = url;
-    this.key = key;
-    this.headers = {
-      'Content-Type': 'application/json',
-      'apikey': key,
-      'Authorization': `Bearer ${key}`
-    };
-  }
-
-  async fetch(endpoint, options = {}) {
-    const response = await fetch(`${this.url}/rest/v1${endpoint}`, {
-      ...options,
-      headers: { ...this.headers, ...options.headers }
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Supabase error:', response.status, errorText);
-      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-    }
-    
-    const text = await response.text();
-    if (!text) {
-      return [];
-    }
-    
-    try {
-      return JSON.parse(text);
-    } catch (error) {
-      console.error('JSON parse error:', error, 'Response text:', text);
-      throw new Error('Invalid JSON response from server');
-    }
-  }
-
-  async select(table, query = '') {
-    // query에 select= 가 없으면 자동으로 select=* 추가
-    const qs = query ? `?${query}` : '?select=*';
-    const finalQs = qs.includes('select=') ? qs
-      : (qs === '?' ? '?select=*' : `${qs}&select=*`);
-    return this.fetch(`/${table}${finalQs}`, { method: 'GET' });
-  }
-
-
-  async insert(table, data) {
-    return this.fetch(`/${table}`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async update(table, data, condition) {
-    return this.fetch(`/${table}?${condition}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async delete(table, condition) {
-    return this.fetch(`/${table}?${condition}`, {
-      method: 'DELETE'
-    });
-  }
-}
-
-let supabase = null;
-if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-  supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
 const VolunteerRecordApp = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -176,17 +105,35 @@ const VolunteerRecordApp = () => {
       setLoading(true);
   
       const offset = pageNum * ITEMS_PER_PAGE;
-      const recordsData = await supabase.select(
-        'records',
-        `order=id.desc&limit=${ITEMS_PER_PAGE}&offset=${offset}`
-      );
-      const commentsData = await supabase.select('comments');
-  
-      if (recordsData.length < ITEMS_PER_PAGE) {
-        setHasMore(false); // 마지막 페이지 도달
+      // 1) records 테이블에서 9개씩 페이징 조회
+      const { data: recordsData, error: recordsError } = await supabase
+        .from('records')
+        .select('*')
+        .order('id', { ascending: false })
+        .range(offset, offset + ITEMS_PER_PAGE - 1);
+      
+      if (recordsError) {
+        console.error('records 불러오기 에러:', recordsError);
+        return;
       }
-  
-      const sortedRecords = recordsData.sort(
+      
+      // 2) comments 테이블 전체 조회 (필요시 where 조건 달 수도 있음)
+      const { data: commentsData, error: commentsError } = await supabaseClient
+        .from('comments')
+        .select('*');
+      
+      if (commentsError) {
+        console.error('comments 불러오기 에러:', commentsError);
+        return;
+      }
+      
+      // 3) 마지막 페이지 여부 확인
+      if (!recordsData || recordsData.length < ITEMS_PER_PAGE) {
+        setHasMore(false);
+      }
+      
+      // 4) 정렬 (created_at 또는 date 기준)
+      const sortedRecords = (recordsData || []).sort(
         (a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
       );
       const recordsWithComments = sortedRecords.map(record => ({
@@ -298,7 +245,7 @@ const VolunteerRecordApp = () => {
         photos: selectedPhotos
       };
 
-      await supabase.insert('records', newRecord);
+      await supabaseClient.from('records').insert([newRecord]);
       await loadRecords(); // 데이터 새로고침
       setShowModal(false);
       resetForm();
@@ -352,7 +299,7 @@ const VolunteerRecordApp = () => {
         photos: selectedPhotos
       };
 
-      await supabase.update('records', updatedData, `id=eq.${editTarget.id}`);
+      await supabaseClient.from('records').update(updatedData).eq('id', editTarget.id);
       await loadRecords(); // 데이터 새로고침
       
       setShowEditModal(false);
@@ -381,8 +328,8 @@ const VolunteerRecordApp = () => {
     
     try {
       // 관련 댓글도 함께 삭제
-      await supabase.delete('comments', `record_id=eq.${deleteTarget}`);
-      await supabase.delete('records', `id=eq.${deleteTarget}`);
+      await supabaseClient.from('comments').delete().eq('record_id', deleteTarget);
+      await supabaseClient.from('records').delete().eq('id', deleteTarget);
       
       await loadRecords(); // 데이터 새로고침
       setShowDeleteModal(false);
@@ -411,7 +358,7 @@ const VolunteerRecordApp = () => {
         timestamp: new Date().toLocaleString('ko-KR')
       };
 
-      await supabase.insert('comments', comment);
+      await supabaseClient.from('comments').insert([comment]);
       await loadRecords(); // 데이터 새로고침
       
       // 선택된 기록 업데이트
@@ -444,7 +391,7 @@ const VolunteerRecordApp = () => {
     }
 
     try {
-      await supabase.delete('comments', `id=eq.${commentToDelete.id}`);
+      await supabaseClient.from('comments').delete().eq('id', commentToDelete.id);
       await loadRecords(); // 데이터 새로고침
       
       // 선택된 기록 업데이트
